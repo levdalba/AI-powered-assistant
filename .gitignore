@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+myenv/
+
+# Flask
+*.sqlite3
+instance/
+flask_session/
+
+# Node.js/Next.js
+node_modules/
+.next/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# General System
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*.orig
+
+# Logs
+*.log
+logs/

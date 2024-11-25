@@ -1,43 +1,57 @@
-from flask import Flask, request, jsonify  # Flask imports for API handling
-import pytesseract  # Tesseract OCR library for text extraction
-from PIL import Image  # Python Imaging Library for image processing
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+import os
 
-# Initialize Flask app
 app = Flask(__name__)
 
+# Use DATABASE_URL from environment variables
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+    "DATABASE_URL", "sqlite:///default.db"
+)
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# Root route for testing the backend
-@app.route("/")
-def home():
-    return "Flask backend is running!"
-
-
-# Updated route: OCR endpoint with language support
-@app.route("/api/ocr", methods=["POST"])
-def ocr():
-    # Check if the request contains an image file
-    if "image" not in request.files:
-        return (
-            jsonify({"error": "No image uploaded"}),
-            400,
-        )  # Return error if no image found
-
-    # Get the uploaded image from the request
-    image = request.files["image"]
-
-    # Get the language parameter from the request, defaulting to English ("eng")
-    lang = request.form.get("lang", "eng")
-
-    try:
-        # Extract text from the image using Tesseract OCR
-        text = pytesseract.image_to_string(Image.open(image), lang=lang)
-        return jsonify({"text": text})
-    except Exception as e:
-        # Handle errors (e.g., unsupported language, invalid image)
-        return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
+db = SQLAlchemy(app)
 
 
-# Run the app
+# Define models
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+
+class Upload(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    file_path = db.Column(db.String(255), nullable=False)
+    uploaded_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+
+class Analysis(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    upload_id = db.Column(db.Integer, db.ForeignKey("upload.id"), nullable=False)
+    result = db.Column(db.JSON, nullable=False)
+    analyzed_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+
+# API endpoint to fetch all users
+@app.route("/api/users", methods=["GET"])
+def get_users():
+    users = User.query.all()
+    return jsonify(
+        [
+            {"id": user.id, "username": user.username, "email": user.email}
+            for user in users
+        ]
+    )
+
+
+# Initialize the database
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
 if __name__ == "__main__":
-    # Make the app accessible externally and enable debugging for development
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)

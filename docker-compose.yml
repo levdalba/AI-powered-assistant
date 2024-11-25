@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
     backend:
         build:
@@ -8,6 +10,9 @@ services:
             - ./backend:/app
         environment:
             FLASK_ENV: development
+            DATABASE_URL: postgresql://postgres:postgres@postgres:5432/ai_assistant
+        depends_on:
+            - postgres # Ensures the backend starts after the database is ready
 
     frontend:
         build:
@@ -18,3 +23,19 @@ services:
             - ./frontend:/app
         environment:
             NODE_ENV: development
+
+    postgres:
+        image: postgres:15
+        container_name: ai_assistant_postgres
+        restart: always
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: ai_assistant
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:

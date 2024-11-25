@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
-import ClientWrapper from './components/ClientWrapper'
-import TouchBackground from './components/TouchBackground'
+import './globals.css'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 
 export default function RootLayout({
     children,
@@ -14,12 +14,9 @@ export default function RootLayout({
             <body
                 style={{ margin: 0, overflow: 'hidden', position: 'relative' }}
             >
-                <ClientWrapper>
-                    <TouchBackground />
-                </ClientWrapper>
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                    {children}
-                </div>
+                <Navbar />
+                <main>{children}</main>
+                <Footer />
             </body>
         </html>
     )

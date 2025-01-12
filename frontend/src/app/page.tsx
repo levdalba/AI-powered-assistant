@@ -90,11 +90,11 @@ export default function UploadPage() {
             )}
 
             {result && (
-                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
-                    <h2 className="text-xl font-semibold mb-2">
-                        Analysis Result:
-                    </h2>
-                    <p>{result}</p>
+                <div className="mt-4">
+                    <h2 className="text-xl font-semibold">Analysis Result:</h2>
+                    <pre className="bg-gray-100 p-4 rounded">
+                        {JSON.stringify(result, null, 2)}
+                    </pre>
                 </div>
             )}
         </div>

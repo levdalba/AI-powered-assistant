@@ -1,26 +1,35 @@
 from flask import Blueprint, request, jsonify
 from uploads.upload_service import save_uploaded_file
+from models.ai_model import ImageAnalyzer
+from models import Analysis, db, Upload
+
+upload_bp = Blueprint("upload", __name__)
+
+# Instantiate the model
+analyzer = ImageAnalyzer("path/to/your/model.h5")
 
 
-upload_bp = Blueprint("upload", __name__, url_prefix="/api/upload")
-
-
-@upload_bp.route("/", methods=["POST"])
+@upload_bp.route("/api/upload", methods=["POST"])
 def upload_file():
-    """Handle file upload."""
-    if "image" not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
+    file = request.files.get("image")
 
-    file = request.files["image"]
+    if not file:
+        return jsonify({"error": "No file provided"}), 400
 
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+    # Save the file
+    file_path = save_uploaded_file(file)
 
-    try:
-        # Save the file
-        file_path = save_uploaded_file(file)
-        # Simulate analysis (Replace this with your AI analysis logic)
-        analysis_result = {"file_path": file_path, "result": "Success"}
-        return jsonify(analysis_result), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # Create and save the upload record
+    upload = Upload(file_path=file_path)
+    db.session.add(upload)
+    db.session.commit()
+
+    # Analyze the image
+    analysis_result = analyzer.analyze(file_path)
+
+    # Create and save the analysis record
+    analysis = Analysis(upload_id=upload.id, result=analysis_result)
+    db.session.add(analysis)
+    db.session.commit()
+
+    return jsonify({"result": analysis_result})

@@ -1,8 +1,9 @@
 'use client'
 
 import './globals.css'
-import Navbar from './components/Navbar'
+import Header from './components/Header'
 import Footer from './components/Footer'
+import Head from './head'
 
 export default function RootLayout({
     children,
@@ -14,7 +15,7 @@ export default function RootLayout({
             <body
                 style={{ margin: 0, overflow: 'hidden', position: 'relative' }}
             >
-                <Navbar />
+                <Header />
                 <main>{children}</main>
                 <Footer />
             </body>
